@@ -1,44 +1,75 @@
-const { Project, User, Category, Comment, Reward, Update} = require('../models');
+const { Project, User, Category, Comment, Reward, Update, Media, Analytics} = require('../models');
+const {Op} = require("sequelize");
 
 class ProjectService {
     async createProject(projectData) {
         try {
-            return await Project.create(projectData);
+            let project = await Project.create(projectData)
+            await Analytics.create({project_id: project.id, views: 0, total_founded: 0, contributions_count: 0})
+            return project;
         } catch (error) {
             console.error('Ошибка при создании проекта:', error);
             throw new Error('Ошибка при создании проекта');
         }
     }
 
-    async getAllProjects(page = 1, limit = 10) {
+    async getAllProjects(filters, pagination) {
+        const { search = '', category = '', type = ''} = filters;
+        const{ page = 1, limit = 10 } = pagination;
+        const where = {};
+
+        if (search) {
+            where.title = { [Op.like]: `%${search}%` };
+        }
+
+        if (category) {
+            where.category_id = category;
+        }
+
+        if (type) {
+            if (type === "Все или ничего"){
+                where.funding_type = "all_or_nothing";
+            }
+            if (type === "Открытое финансирование"){
+                where.funding_type = "no_obligation"
+            }
+        }
+
         const offset = (page - 1) * limit;
 
-        const projects = await Project.findAndCountAll({
+        const { count, rows } = await Project.findAndCountAll({
+            where,
             include: [
-                {
-                    model: User,
-                    as: 'initiator',
-                    attributes: ['id', 'nickname'],
-                },
+                { model: User, as: 'initiator', attributes: ['nickname'] },
+                { model: Category, attributes: ['name'] },
+                { model: Media, as: 'media', attributes: ['file_path'], limit: 1},
+                { model: Analytics, as: 'analytics', attributes: ['total_founded'] },
             ],
-            offset,
             limit,
-            order: [['created_at', 'DESC']],
+            offset,
         });
 
         return {
-            total: projects.count,
-            page,
-            pages: Math.ceil(projects.count / limit),
-            data: projects.rows,
+            data: rows,
+            totalPages: Math.ceil(count / limit),
         };
     }
 
     async getProjectById(id) {
         const project = await Project.findByPk(id, {
             include: [
-                { model: User, as: 'initiator', attributes: ['email', 'firstname', 'lastname'] },
-                { model: Category, attributes: ['name'] }
+                { model: User, as: 'initiator', attributes: ['email', 'firstname', 'lastname', 'nickname'] },
+                { model: Category, attributes: ['name'] },
+                {
+                    model: Media,
+                    as: 'media',
+                    attributes: ['file_path']
+                },
+                {
+                    model: Analytics,
+                    as: 'analytics',
+                    attributes: ['total_founded']
+                },
             ]
         });
         if (!project) throw new Error('Проект не найден');
@@ -79,7 +110,7 @@ class ProjectService {
                 {
                     model: User,
                     as: 'user',
-                    attributes: ['email', 'firstname', 'lastname'],
+                    attributes: ['email', 'firstname', 'lastname', 'nickname'],
                 },
             ],
             order: [['created_at', 'DESC']],
@@ -88,7 +119,6 @@ class ProjectService {
 
     async getTopProjects() {
         return await Project.findAll({
-            attributes: ['id', 'title', 'description'],
             order: [['created_at', 'DESC']],
             limit: 5,
             include: [
@@ -96,6 +126,17 @@ class ProjectService {
                     model: User,
                     as: 'initiator',
                     attributes: ['id', 'nickname'],
+                },
+                {
+                    model: Media,
+                    as: 'media',
+                    attributes: ['file_path'],
+                    limit: 1,
+                },
+                {
+                    model: Analytics,
+                    as: 'analytics',
+                    attributes: ['total_founded']
                 },
             ],
         });

@@ -4,9 +4,14 @@ module.exports = (sequelize) => {
   class Project extends Model {
     static associate(models) {
       Project.belongsTo(models.User, { foreignKey: 'initiator_id', as: 'initiator' });
+        Project.hasMany(models.Media, { foreignKey: 'project_id', as: 'media'});
         Project.belongsTo(models.Category, {
             foreignKey: 'category_id',
             onDelete: 'SET NULL',
+        });
+        Project.hasOne(models.Analytics, {
+            foreignKey: 'project_id',
+            as: 'analytics',
         });
     }
   }
@@ -28,7 +33,7 @@ module.exports = (sequelize) => {
         funding_type: {
           type: DataTypes.STRING,
           allowNull: false,
-          validate: { isIn: [['all_or_nothing', 'open_funding']] },
+          validate: { isIn: [['all_or_nothing', 'no_obligation']] },
         },
         status: {
           type: DataTypes.STRING,

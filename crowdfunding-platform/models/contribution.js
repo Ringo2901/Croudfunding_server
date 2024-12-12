@@ -1,38 +1,41 @@
 const { Model, DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-    class Comment extends Model {
+    class Contribution extends Model {
         static associate(models) {
-            Comment.belongsTo(models.User, {
+            Contribution.belongsTo(models.User, {
                 foreignKey: 'user_id',
                 onDelete: 'CASCADE',
                 as: 'user'
             });
-            Comment.belongsTo(models.Project, {
+            Contribution.belongsTo(models.Project, {
                 foreignKey: 'project_id',
-                onDelete: 'CASCADE',
+                onDelete: 'CASCADE'
+            });
+            Contribution.belongsTo(models.Reward, {
+                foreignKey: 'reward_level_id'
             });
         }
     }
 
-    Comment.init(
+    Contribution.init(
         {
-            content: {
-                type: DataTypes.TEXT,
+            amount: {
+                type: DataTypes.NUMBER,
                 allowNull: false,
             },
-            created_at: {
+            contribution_date: {
                 type: DataTypes.DATE,
                 defaultValue: DataTypes.NOW,
             },
         },
         {
             sequelize,
-            modelName: 'Comment',
-            tableName: 'comments',
+            modelName: 'Contribution',
+            tableName: 'contribution',
             timestamps: false,
         }
     );
 
-    return Comment;
+    return Contribution;
 };

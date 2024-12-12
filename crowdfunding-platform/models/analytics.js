@@ -4,7 +4,7 @@ module.exports = (sequelize) => {
     class Analytics extends Model {
         static associate(models) {
             Analytics.belongsTo(models.Project, {
-                foreignKey: 'projectId',
+                foreignKey: 'project_id',
                 onDelete: 'CASCADE',
             });
         }
@@ -16,11 +16,11 @@ module.exports = (sequelize) => {
                 type: DataTypes.INTEGER,
                 defaultValue: 0,
             },
-            backers: {
+            contributions_count: {
                 type: DataTypes.INTEGER,
                 defaultValue: 0,
             },
-            fundsRaised: {
+            total_founded: {
                 type: DataTypes.DECIMAL(10, 2),
                 defaultValue: 0,
             },

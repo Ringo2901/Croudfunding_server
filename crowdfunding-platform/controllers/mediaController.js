@@ -3,9 +3,9 @@ const MediaService = require('../services/MediaService');
 class MediaController {
     async uploadMedia(req, res) {
         try {
-            const { projectId } = req.body;
+            const { projectId } = req.params;
 
-            if (!projectId || !req.file) {
+            if (!projectId || !req.body) {
                 return res.status(400).json({ message: 'Не указан projectId или отсутствует файл' });
             }
 

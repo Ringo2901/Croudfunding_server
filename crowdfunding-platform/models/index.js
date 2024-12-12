@@ -45,7 +45,9 @@ const models = {
   Comment: require('./comments')(sequelize),
   Review: require('./reviews')(sequelize),
   Category: require('./category')(sequelize),
-  Update: require('./update')(sequelize)
+  Update: require('./update')(sequelize),
+  Media: require('./media')(sequelize),
+  Contribution: require('./contribution')(sequelize)
 };
 
 Object.values(models).forEach((model) => {

@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { User, Project} = require('../models');
+const { User, Project, Contribution} = require('../models');
 const { Op } = require('sequelize');
 
 class UserService {
@@ -78,13 +78,15 @@ class UserService {
 
     async updateProfile(req, res) {
         const userId = req.user.id;
-        const {nickname, email} = req.body;
+        const {nickname, email, firstname, lastname} = req.body;
 
         try {
             const user = await User.findByPk(userId);
             if (user) {
                 user.nickname = nickname;
                 user.email = email;
+                user.firstname = firstname;
+                user.lastname = lastname;
                 await user.save();
                 res.json(user);
             } else {

@@ -1,6 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const userRoutes = require('./routes/userRoutes');
+const categoriesRoutes = require('./routes/categoriesRoutes');
 const projectRoutes = require('./routes/projectRoutes');
 const cors = require('cors');
 const mediaRoutes = require('./routes/MediaRoutes');
@@ -24,11 +25,13 @@ app.use((req, res, next) => {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     next();
 });
+const analyticsRoutes = require('./routes/analyticsRoutes');
 
+app.use('/api', analyticsRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/media', mediaRoutes);
-
+app.use('/api/categories', categoriesRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
